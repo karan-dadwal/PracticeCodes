@@ -5,6 +5,7 @@ import com.first.taskapp.models.Task;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class TasksServiceImpl implements TasksService{
 
@@ -26,21 +27,46 @@ public class TasksServiceImpl implements TasksService{
 
     @Override
     public Task getTaskById(int id) {
-        return null;
+        return getTask(id);
+    }
+
+    private Task getTask(int id) {
+        AtomicReference<Task> task = new AtomicReference<>();
+        taskList.forEach(t -> {
+            if(t.getId() == id){
+                task.set(t);
+            }
+        });
+        if(task.get() == null){
+            throw new TaskNotFoundException(id);
+        }
+        return task.get();
     }
 
     @Override
     public Task createTask(Task task) {
-        return null;
+        Task t = new Task(task.getId(), task.getName(), task.isCompleted(), task.getDueBy());
+        taskList.add(t);
+        return t;
     }
 
     @Override
     public Task updateTask(int id, Task task) {
-        return null;
+        Task t = getTask(id);
+        if(task.getName() != null){
+            t.setName(task.getName());
+        }
+        if(task.isCompleted()){
+            t.setCompleted(task.isCompleted());
+        }
+        if(task.getDueBy() != null){
+            t.setDueBy(task.getDueBy());
+        }
+        return t;
     }
 
     @Override
     public void deleteTask(int id) {
-
+        taskList.remove(getTask(id));
     }
 }
